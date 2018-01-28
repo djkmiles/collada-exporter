@@ -174,7 +174,7 @@ class DaeExporter:
             imgpath = bpy.path.abspath(imgpath)
 
         if (self.config["use_copy_images"]):
-            basedir = os.path.join(os.path.dirname(self.path), "images")
+            basedir = os.path.dirname(self.path)
             if (not os.path.isdir(basedir)):
                 os.makedirs(basedir)
 
@@ -183,10 +183,10 @@ class DaeExporter:
 
                 if not os.path.isfile(dstfile):
                     shutil.copy(imgpath, dstfile)
-                imgpath = os.path.join("images", os.path.basename(imgpath))
+                imgpath = os.path.basename(imgpath)
             else:
                 img_tmp_path = image.filepath
-                if img_tmp_path.lower().endswith(bpy.path.extensions_image):
+                if True or img_tmp_path.lower().endswith(bpy.path.extensions_image):
                     image.filepath = os.path.join(
                         basedir, os.path.basename(img_tmp_path))
                 else:
@@ -198,8 +198,7 @@ class DaeExporter:
 
                 if not os.path.isfile(dstfile):
                     image.save()
-                imgpath = os.path.join(
-                    "images", os.path.basename(image.filepath))
+                imgpath = os.path.basename(image.filepath)
                 image.filepath = img_tmp_path
 
         else:
@@ -210,7 +209,8 @@ class DaeExporter:
                 # TODO: Review, not sure why it fails
                 pass
 
-        imgid = self.new_id("image")
+        # imgid = self.new_id("image")
+        imgid = image.name
 
         print("FOR: {}".format(imgpath))
 
@@ -282,13 +282,13 @@ class DaeExporter:
                 normal_tex = sampler_sid
 
         self.writel(S_FX, 3, "<technique sid=\"common\">")
-        shtype = "blinn"
+        shtype = "phong"
         self.writel(S_FX, 4, "<{}>".format(shtype))
 
         self.writel(S_FX, 5, "<emission>")
         if emission_tex is not None:
             self.writel(
-                S_FX, 6, "<texture texture=\"{}\" texcoord=\"CHANNEL1\"/>"
+                S_FX, 6, "<texture texture=\"{}\" />"
                 .format(emission_tex))
         else:
             # TODO: More accurate coloring, if possible
@@ -304,7 +304,7 @@ class DaeExporter:
         self.writel(S_FX, 5, "<diffuse>")
         if diffuse_tex is not None:
             self.writel(
-                S_FX, 6, "<texture texture=\"{}\" texcoord=\"CHANNEL1\"/>"
+                S_FX, 6, "<texture texture=\"{}\" />"
                 .format(diffuse_tex))
         else:
             self.writel(S_FX, 6, "<color>{}</color>".format(numarr_alpha(
@@ -315,7 +315,7 @@ class DaeExporter:
         if specular_tex is not None:
             self.writel(
                 S_FX, 6,
-                "<texture texture=\"{}\" texcoord=\"CHANNEL1\"/>".format(
+                "<texture texture=\"{}\" />".format(
                     specular_tex))
         else:
             self.writel(S_FX, 6, "<color>{}</color>".format(numarr_alpha(
@@ -349,7 +349,7 @@ class DaeExporter:
             self.writel(S_FX, 6, "<bump bumptype=\"NORMALMAP\">")
             self.writel(
                 S_FX, 7,
-                "<texture texture=\"{}\" texcoord=\"CHANNEL1\"/>".format(
+                "<texture texture=\"{}\" />".format(
                     normal_tex))
             self.writel(S_FX, 6, "</bump>")
 
@@ -1231,10 +1231,10 @@ class DaeExporter:
             self.writel(S_LAMPS, 4, "</spot>")
 
         else:  # Write a sun lamp for everything else (not supported)
-            self.writel(S_LAMPS, 4, "<directional>")
+            self.writel(S_LAMPS, 4, "<ambient>")
             self.writel(S_LAMPS, 5, "<color>{}</color>".format(
                 strarr(light.color)))
-            self.writel(S_LAMPS, 4, "</directional>")
+            self.writel(S_LAMPS, 4, "</ambient>")
 
         self.writel(S_LAMPS, 3, "</technique_common>")
         self.writel(S_LAMPS, 1, "</light>")
